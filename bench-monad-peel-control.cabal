@@ -1,0 +1,25 @@
+Name:                bench-monad-peel-control
+Version:             0.1
+Synopsis:            Benchmark monad-peel and monad-control
+License:             BSD3
+Author:              Bas van Dijk
+Maintainer:          Bas van Dijk <v.dijk.bas@gmail.com>
+Copyright:           (c) 2011 Bas van Dijk
+Build-type:          Simple
+Cabal-version:       >= 1.6
+
+source-repository head
+  type:     darcs
+  location: http://code.haskell.org/~basvandijk/code/bench-monad-peel-control
+
+executable bench-monad-peel-control
+  main-is: bench.hs
+
+  ghc-options: -O2
+
+  build-depends: base                 >= 3     && < 4.4
+               , base-unicode-symbols >= 0.1.1 && < 0.3
+               , mtl                  >= 2.0   && < 2.1
+               , criterion            >= 0.5   && < 0.6
+               , monad-control        >= 0.1   && < 0.2
+               , monad-peel           >= 0.1   && < 0.2
