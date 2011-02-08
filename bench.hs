@@ -90,6 +90,7 @@ data E = E deriving (Show, Typeable)
 
 instance Exception E
 
+throwE :: MonadIO m => m ()
 throwE = liftIO $ throwIO E
 
 mpMask :: MP.MonadPeelIO m => ((forall a. m a -> m a) -> m b) -> m b
