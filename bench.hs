@@ -31,6 +31,9 @@ import qualified Control.Monad.IO.Peel  as MP
 -- from monad-control:
 import qualified Control.Exception.Control as MC
 
+-- from MonadCatchIO-transformers:
+import qualified Control.Monad.CatchIO as MCIO
+
 
 --------------------------------------------------------------------------------
 -- Main
@@ -38,15 +41,20 @@ import qualified Control.Exception.Control as MC
 
 main :: IO ()
 main = defaultMain
-         [ benchBoth "bracket"  benchBracket  MP.bracket  MC.bracket
-         , benchBoth "bracket_" benchBracket_ MP.bracket_ MC.bracket_
-         , benchBoth "catch"    benchCatch    MP.catch    MC.catch
-         , benchBoth "try"      benchTry      MP.try      MC.try
-         , benchBoth "mask"     benchMask     mpMask      MC.mask
+         [ benchAll  "bracket"  benchBracket  MCIO.bracket  MP.bracket  MC.bracket
+         , benchAll  "bracket_" benchBracket_ MCIO.bracket_ MP.bracket_ MC.bracket_
+         , benchAll  "catch"    benchCatch    MCIO.catch    MP.catch    MC.catch
+         , benchAll  "try"      benchTry      MCIO.try      MP.try      MC.try
+
+         , bgroup "mask"
+           [ bench "monad-peel"    $ benchMask mpMask
+           , bench "monad-control" $ benchMask MC.mask
+           ]
          ]
 
-benchBoth name bnch peel mndCtrl = bgroup name
-  [ bench "monad-peel"    $ bnch peel
+benchAll name bnch mcio peel mndCtrl = bgroup name
+  [ bench "MonadCatchIO"  $ bnch mcio
+  , bench "monad-peel"    $ bnch peel
   , bench "monad-control" $ bnch mndCtrl
   ]
 
