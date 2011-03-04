@@ -41,10 +41,15 @@ import qualified Control.Monad.CatchIO as MCIO
 
 main :: IO ()
 main = defaultMain
-         [ benchAll  "bracket"  benchBracket  MCIO.bracket  MP.bracket  MC.bracket
-         , benchAll  "bracket_" benchBracket_ MCIO.bracket_ MP.bracket_ MC.bracket_
-         , benchAll  "catch"    benchCatch    MCIO.catch    MP.catch    MC.catch
-         , benchAll  "try"      benchTry      MCIO.try      MP.try      MC.try
+         [ benchAll "bracket"  benchBracket  MCIO.bracket  MP.bracket  MC.bracket
+         , bgroup "bracketIO"  [bench "monad-control" benchBracketIO]
+
+         , benchAll "bracket_" benchBracket_ MCIO.bracket_ MP.bracket_ MC.bracket_
+         , bgroup "bracketIO_" [bench "monad-control" benchBracketIO_]
+
+         , benchAll "catch"    benchCatch    MCIO.catch    MP.catch    MC.catch
+
+         , benchAll "try"      benchTry      MCIO.try      MP.try      MC.try
 
          , bgroup "mask"
            [ bench "monad-peel"    $ benchMask mpMask
@@ -82,6 +87,9 @@ benchBracket  bracket  = exe $ bracket nop (\_ -> nop) (\_ -> nop)
 benchBracket_ bracket_ = exe $ bracket_ nop nop nop
 benchCatch    catch    = exe $ catch throwE (\E -> nop)
 benchTry      try      = exe $ try throwE :: R (Either E ())
+
+benchBracketIO  = exe $ MC.bracketIO nop (\_ -> nop) (\_ -> nop)
+benchBracketIO_ = exe $ MC.bracketIO_ nop nop nop
 
 benchMask :: (((forall a. M a -> M a) -> M ()) -> M ()) -> R ()
 benchMask mask = exe $ mask $ \restore -> nop >> restore nop >> nop

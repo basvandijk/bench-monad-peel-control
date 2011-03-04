@@ -21,6 +21,6 @@ executable bench-monad-peel-control
                , base-unicode-symbols 	   >= 0.1.1   && < 0.3
                , transformers         	   >= 0.2     && < 0.3
                , criterion            	   >= 0.5     && < 0.6
-               , monad-control        	   >= 0.1     && < 0.3
+               , monad-control        	   >= 0.2.1   && < 0.3
                , monad-peel           	   >= 0.1     && < 0.2
                , MonadCatchIO-transformers >= 0.2.2.2 && < 0.3
