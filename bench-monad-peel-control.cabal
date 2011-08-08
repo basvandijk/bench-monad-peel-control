@@ -9,15 +9,15 @@ Build-type:          Simple
 Cabal-version:       >= 1.6
 
 source-repository head
-  type:     darcs
-  location: http://code.haskell.org/~basvandijk/code/bench-monad-peel-control
+  type:     git
+  location: git://github.com/basvandijk/bench-monad-peel-control.git
 
 executable bench-monad-peel-control
   main-is: bench.hs
 
   ghc-options: -O2
 
-  build-depends: base                 	   >= 3       && < 4.4
+  build-depends: base                 	   >= 3       && < 4.5
                , base-unicode-symbols 	   >= 0.1.1   && < 0.3
                , transformers         	   >= 0.2     && < 0.3
                , criterion            	   >= 0.5     && < 0.6
