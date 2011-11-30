@@ -29,11 +29,10 @@ import qualified Control.Exception.Peel as MP
 import qualified Control.Monad.IO.Peel  as MP
 
 -- from monad-control:
-import qualified Control.Exception.Control as MC
-import qualified Control.Monad.IO.Control  as MC
+import qualified Control.Monad.Trans.Control as MC
 
--- from MonadCatchIO-transformers:
-import qualified Control.Monad.CatchIO as MCIO
+-- from lifted-base:
+import qualified Control.Exception.Lifted as MC
 
 
 --------------------------------------------------------------------------------
@@ -42,22 +41,26 @@ import qualified Control.Monad.CatchIO as MCIO
 
 main :: IO ()
 main = defaultMain
-  [ benchAll "bracket"   benchBracket  MCIO.bracket  MP.bracket   MC.bracket
-  , benchTwo "liftIOOp"  benchLiftIOOp               MP.liftIOOp  MC.liftIOOp
-  , benchAll "bracket_"  benchBracket_ MCIO.bracket_ MP.bracket_  MC.bracket_
-  , benchTwo "liftIOOp_" benchLiftIOOp_              MP.liftIOOp_ MC.liftIOOp_
-  , benchAll "catch"     benchCatch    MCIO.catch    MP.catch     MC.catch
-  , benchAll "try"       benchTry      MCIO.try      MP.try       MC.try
-  , benchTwo "mask"      benchMask                   mpMask       MC.mask
+  [ b "bracket"   benchBracket  MP.bracket   MC.bracket
+  , b "bracket_"  benchBracket_ MP.bracket_  MC.bracket_
+  , b "catch"     benchCatch    MP.catch     MC.catch
+  , b "try"       benchTry      MP.try       MC.try
+  , b "mask"      benchMask     mpMask       MC.mask
+
+  , bgroup "liftIOOp"
+    [ bench "monad-peel"    $ exe $ MP.liftIOOp   (E.bracket nop (\_ -> nop))
+                                                  (\_ -> nop)
+    , bench "monad-control" $ exe $ MC.liftBaseOp (E.bracket nop (\_ -> nop))
+                                                  (\_ -> nop)
+    ]
+
+  , bgroup "liftIOOp_"
+    [ bench "monad-peel"    $ exe $ MP.liftIOOp_   (E.bracket_ nop nop) nop
+    , bench "monad-control" $ exe $ MC.liftBaseOp_ (E.bracket_ nop nop) nop
+    ]
   ]
 
-benchAll name bnch mcio peel mndCtrl = bgroup name
-  [ bench "MonadCatchIO"  $ bnch mcio
-  , bench "monad-peel"    $ bnch peel
-  , bench "monad-control" $ bnch mndCtrl
-  ]
-
-benchTwo name bnch peel mndCtrl = bgroup name
+b name bnch peel mndCtrl = bgroup name
   [ bench "monad-peel"    $ bnch peel
   , bench "monad-control" $ bnch mndCtrl
   ]
@@ -82,14 +85,9 @@ exe = runM 0 False
 --------------------------------------------------------------------------------
 
 benchBracket   bracket   = exe $              bracket  nop (\_ -> nop)  (\_ -> nop)
-benchLiftIOOp  liftIOOp  = exe $ liftIOOp  (E.bracket  nop (\_ -> nop)) (\_ -> nop)
 benchBracket_  bracket_  = exe $              bracket_ nop nop          nop
-benchLiftIOOp_ liftIOOp_ = exe $ liftIOOp_ (E.bracket_ nop nop)         nop
 benchCatch     catch     = exe $ catch throwE (\E -> nop)
 benchTry       try       = exe $ try throwE :: R (Either E ())
-
-
--- benchBracketIO_ = exe $ MC.bracketIO_ nop nop nop
 
 benchMask :: (((forall a. M a -> M a) -> M ()) -> M ()) -> R ()
 benchMask mask = exe $ mask $ \restore -> nop >> restore nop >> nop
